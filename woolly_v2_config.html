@@ -3,7 +3,7 @@
   <head>
 	<title>Woolly Watch Config</title>
 
-	
+
   </head>
   <body>
 	<h1>Woolly Watch Config</h1>
@@ -19,33 +19,33 @@
 	<p>
 	<button id="save_button">Save</button>
 	</p>
-	
-	
-	
+
+
+
 	<script>
 	  //Setup to allow easy adding more options later
 	  function saveOptions() {
 		var realtimeSelect = document.getElementById("real_time_select");
-	
+
 		var options = {
 		  "alwaysReal": realtimeSelect.options[realtimeSelect.selectedIndex].value
 		}
-	
+
 		return options;
 	  };
-	
+
 	  var submitButton = document.getElementById("save_button");
 	  submitButton.addEventListener("click", 
 		function() {
 		  console.log("Submit");
-	
+
 		  var options = saveOptions();
 		  var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(options));
-	
+
 		  document.location = location;
 		}, 
 	  false);
 	</script>
-	
+
   </body>
 </html>
