@@ -16,6 +16,8 @@
 	</select>
 	</p>
 
+	<div id="custom_times"></div>
+
 	<p>
 	<button id="save_button">Save</button>
 	</p>
@@ -23,16 +25,158 @@
 
 
 	<script>
-	  //Setup to allow easy adding more options later
-	  function saveOptions() {
-		var realtimeSelect = document.getElementById("real_time_select");
 
-		var options = {
-		  "alwaysReal": realtimeSelect.options[realtimeSelect.selectedIndex].value
+	var numTimes=2;
+
+	  //Save to pebble and local storage
+	  function saveOptions() {
+	  	
+			var options = {
+			  "alwaysReal": processSelect("real_time_select")
+			 };
+
+			 for (var i=1; i < numTimes+1; i++) {
+			 	options["custom_"+i+"_enabled"]=processSelect("custom_"+i+"_enabled");
+				options["custom_"+i+"_hour"]=processSelect("custom_"+i+"_hour");
+				options["custom_"+i+"_minute"]=processSelect("custom_"+i+"_minute");
+				options["custom_"+i+"_duration"]=processSelect("custom_"+i+"_duration");
+				options["custom_"+i+"_duration"]=processSelect("custom_"+i+"_vibrate");
+				options["custom_"+i+"_line1_text"]=processInput("custom_"+i+"_line1_text");
+				options["custom_"+i+"_line2_text"]=processInput("custom_"+i+"_line2_text");
+				options["custom_"+i+"_line3_text"]=processInput("custom_"+i+"_line3_text");
+				options["custom_"+i+"_line4_text"]=processInput("custom_"+i+"_line4_text");
+			}
+			console.log(options);
+			return options;
+	  };
+		
+		// load previously saved configuration (stored in local storagae not source from Pebble!)
+	  function loadOptions() {
+	  	setInputValue("real_time_select");
+
+	  	for (var i=1; i < numTimes+1; i++) {
+	  	setInputValue("custom_"+i+"_enabled");
+	  	setInputValue("custom_"+i+"_hour");
+	  	setInputValue("custom_"+i+"_minute");
+	  	setInputValue("custom_"+i+"_duration");
+	  	setInputValue("custom_"+i+"_vibrate");
+	  	setInputValue("custom_"+i+"_line1_text");
+	  	setInputValue("custom_"+i+"_line2_text");
+	  	setInputValue("custom_"+i+"_line3_text");
+	  	setInputValue("custom_"+i+"_line4_text");	  		
+	  	}
+
+	  }
+
+	  //helper for setting drop downs
+	  function setInputValue(elementID) {
+	  	var storedValue=window.localStorage.getItem(elementID);
+	  	if(storedValue!==null) {
+	  		var element=document.getElementById(elementID);
+	  		 element.value = storedValue;
+	  		 console.log('Local storage found for: '+elementID+" with value '"+storedValue+"'");
+	  	} else {
+	  		console.log('Not found in local storage: '+elementID);
+	  	}
+	  }
+
+
+	  function processSelect(elementID) {
+	  		var element = document.getElementById(elementID);
+	  		var value= element.options[element.selectedIndex].value;
+				saveOptionToStorage(elementID,value);
+				return value;
+	  }
+
+	  function processInput(elementID) {
+	  		var element = document.getElementById(elementID);
+	  		var value= element.value;
+				saveOptionToStorage(elementID,value);
+				return value;
+	  }
+
+	  //saves a setting to local storage
+	  function saveOptionToStorage(key, value) {	  	
+	  		window.localStorage.setItem(key,value); 
+	  }
+
+	  function buildForm(){
+	  	var out=document.getElementById("custom_times");
+	  	for (var i=1; i < numTimes+1; i++) {
+
+	  		//title
+	  		var title=document.createElement("H3");
+	  		title.innerHTML="Custom Time "+i;
+	  		out.appendChild(title);
+
+
+	  		var container;
+	  		//enabled
+	  		container=document.createElement("P");
+	  		container.innerHTML="Enabled: "
+	  			+ "<select id='custom_"+i+"_enabled'>"
+	  			+ "<option value='off'>Disabled</option>"
+	  			+ "<option value='on'>Enabled</option>"
+	  			+ "</select>";
+	  		out.appendChild(container);
+
+	  		//vibrate
+	  		container=document.createElement("P");
+	  		container.innerHTML="Vibrate: "
+	  			+ "<select id='custom_"+i+"_vibrate'>"
+	  			+ "<option value='off'>Disabled</option>"
+	  			+ "<option value='on'>Enabled</option>"
+	  			+ "</select>";
+	  		out.appendChild(container);
+
+	  		//time
+	  		container=document.createElement("P");
+	  		container.innerHTML=
+	  				"Hour: <select id='custom_"+i+"_hour'></select>"
+	  			+ "Minute: <select id='custom_"+i+"_minute'></select>"
+	  			+ "Duration: <select id='custom_"+i+"_duration'></select>"
+	  		out.appendChild(container);
+
+				buildFormNumbers("custom_"+i+"_hour",24,0);
+	  		buildFormNumbers("custom_"+i+"_minute",60,0);
+	  		buildFormNumbers("custom_"+i+"_duration",10,1);
+	  		
+
+	  		//text lines
+	  		container=document.createElement("P");
+	  		container.innerHTML=
+	  				"Line 1: <input type='text' id='custom_"+i+"_line1_text'/>"
+	  			+ "<br />Line 2: <input type='text' id='custom_"+i+"_line2_text'/>"
+	  			+ "<br />Line 3: <input type='text' id='custom_"+i+"_line3_text'/>"
+	  			+ "<br />Line 4: <input type='text' id='custom_"+i+"_line4_text'/>"
+	  		out.appendChild(container);
+			}
+
+	  }
+
+
+
+	  	
+
+
+	  //generates an hours list
+	  function buildFormNumbers(elementID,size,start) {
+	  	var element=document.getElementById(elementID);
+	  	for (var i=start; i <size+start; i++) {
+	  		var opt=document.createElement("OPTION");
+	  		opt.value=i;
+	  		opt.innerHTML=pad(i,2);
+	  		element.appendChild(opt);
+	  	}
+	  }
+
+	  //helper function for padding strings
+	  function pad(n, width, z) {
+		  z = z || '0';
+		  n = n + '';
+		  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
 		}
 
-		return options;
-	  };
 
 	  var submitButton = document.getElementById("save_button");
 	  submitButton.addEventListener("click", 
@@ -44,7 +188,11 @@
 
 		  document.location = location;
 		}, 
-	  false);
+	  	false
+	  );
+
+	  buildForm();
+	  loadOptions();
 	</script>
 
   </body>
